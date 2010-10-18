@@ -1,0 +1,67 @@
+package ptr.planner;
+
+import org.drools.solver.core.score.calculator.HardAndSoftConstraintScoreCalculator;
+import org.drools.solver.core.score.constraint.UnweightedConstraintOccurrence;
+import org.drools.solver.core.score.constraint.ConstraintType;
+
+import ptr.planner.domain.PTRWeek;
+import ptr.planner.domain.Person;
+import ptr.planner.domain.Timeslot;
+
+global HardAndSoftConstraintScoreCalculator scoreCalculator;
+
+// ############################################################################
+// Hard constraints
+// ############################################################################
+
+rule "At least one person"
+    when
+        $week : PTRWeek(firstPerson == null, secondPerson == null);
+    then
+        insertLogical(new UnweightedConstraintOccurrence("At least one person", $week));
+end
+
+
+/*
+rule "Leo on vacations 17-may"
+    when
+    	$person : Person(name == "Leo");
+        PTRWeek(
+        	firstPerson == $person || secondPerson == $person
+        	&& (begin >= "20-May-2010" && finish <= "02-Jun-2010")
+        );
+    then
+        insertLogical(new UnweightedConstraintOccurrence("LeoVacations", $person));
+end
+*/
+
+rule "Leo not in 7/6"
+	when
+		$person : Person(name == "LG");
+		exists PTRWeek (firstPerson == $person || secondPerson == $person)
+	then
+        insertLogical(new UnweightedConstraintOccurrence("LeoVacations", $person));
+end
+
+rule "At least 3 weeks bw PTR duties"
+	when
+		$weekOne : PTRWeek($beginOne : begin, $firstPerson : firstPerson, $secondPerson : secondPerson)
+		$weekTwo : PTRWeek( begin != $beginOne &&
+							$beginTwo : begin &&
+						   (firstPerson == $firstPerson || secondPerson == $firstPerson) ||
+						   (firstPerson == $secondPerson || secondPerson == $secondPerson)
+		)
+		eval (PTRWeek.diff($beginOne, $beginTwo) < 2)
+	then		
+		insertLogical(new UnweightedConstraintOccurrence("ThreeWeeksInterval", $weekOne));
+end
+
+rule "hardConstraintsBroken"
+    when
+        $occurrenceCount : Number() from accumulate(
+            $unweightedConstraintOccurrence : UnweightedConstraintOccurrence(),
+            count($unweightedConstraintOccurrence)
+        );
+    then
+        scoreCalculator.setHardConstraintsBroken($occurrenceCount.intValue());
+end

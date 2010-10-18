@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localSearchSolver>
+    <scoreDrl>/test/ptrVacationsConstraints.drl</scoreDrl>
+    <scoreDefinition>
+        <scoreDefinitionType>HARD_AND_SOFT</scoreDefinitionType>
+    </scoreDefinition>
+    <finish>
+        <maximumUnimprovedStepCount>100</maximumUnimprovedStepCount>
+    </finish>
+    <selector>
+        <moveFactoryClass>ptr.planner.move.factory.PtrWeekMoveFactory</moveFactoryClass>
+    </selector>
+    <accepter>
+        <completeUndoMoveTabuSize>100</completeUndoMoveTabuSize>
+    </accepter>
+    <forager>
+        <foragerType>MAX_SCORE_OF_ALL</foragerType>
+    </forager>
+</localSearchSolver>
